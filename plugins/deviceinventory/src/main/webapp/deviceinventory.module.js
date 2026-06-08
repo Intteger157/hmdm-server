@@ -32,8 +32,7 @@ angular.module('plugin-deviceinventory', ['ngResource', 'ui.bootstrap', 'ui.rout
             },
             requestScan: {
                 url: 'rest/plugins/deviceinventory/private/scan/:deviceNumber',
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'}
+                method: 'GET'
             }
         });
     })
@@ -85,7 +84,7 @@ angular.module('plugin-deviceinventory', ['ngResource', 'ui.bootstrap', 'ui.rout
 
         $scope.requestScan = function () {
             $scope.busy = true;
-            pluginDeviceInventoryService.requestScan({deviceNumber: $scope.deviceNumber}, {}, function (response) {
+            pluginDeviceInventoryService.requestScan({deviceNumber: $scope.deviceNumber}, function (response) {
                 $scope.busy = false;
                 if (response.status === 'OK') {
                     $scope.successMessage = localization.localize('plugin.deviceinventory.scan.requested');
