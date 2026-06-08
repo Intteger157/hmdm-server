@@ -1,7 +1,6 @@
 package com.hmdm.plugins.deviceinventory.rest;
 
 import com.hmdm.notification.PushService;
-import com.hmdm.notification.persistence.domain.PushMessage;
 import com.hmdm.persistence.DeviceDAO;
 import com.hmdm.persistence.UnsecureDAO;
 import com.hmdm.persistence.domain.Device;
@@ -41,6 +40,7 @@ public class DeviceInventoryResource {
 
     private static final Logger logger = LoggerFactory.getLogger(DeviceInventoryResource.class);
     private static final String PERMISSION = "plugin_deviceinventory_access";
+    private static final String PUSH_TYPE_INVENTORY_SCAN = "inventoryScan";
 
     private final DeviceInventoryDAO deviceInventoryDAO;
     private final DeviceDAO deviceDAO;
@@ -100,6 +100,7 @@ public class DeviceInventoryResource {
     @ApiOperation(value = "Request inventory scan on device", authorizations = {@Authorization("Bearer Token")})
     @POST
     @Path("/private/scan/{deviceNumber}")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response requestScan(@PathParam("deviceNumber") String deviceNumber) {
         if (!hasAccess()) {
@@ -111,12 +112,14 @@ public class DeviceInventoryResource {
             return Response.DEVICE_NOT_FOUND_ERROR();
         }
 
-        PushMessage message = new PushMessage();
-        message.setDeviceId(device.getId());
-        message.setMessageType(PushMessage.TYPE_INVENTORY_SCAN);
-        pushService.send(message);
-        logger.info("Inventory scan requested for device {}", device.getNumber());
-        return Response.OK();
+        try {
+            pushService.sendSimpleMessage(device.getId(), PUSH_TYPE_INVENTORY_SCAN);
+            logger.info("Inventory scan requested for device {}", device.getNumber());
+            return Response.OK();
+        } catch (Exception e) {
+            logger.error("Failed to request inventory scan for device {}", device.getNumber(), e);
+            return Response.ERROR("Failed to send scan request");
+        }
     }
 
     @ApiOperation(value = "Upload installed applications from device")
