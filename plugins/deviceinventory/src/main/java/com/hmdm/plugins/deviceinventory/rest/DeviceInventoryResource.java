@@ -98,9 +98,8 @@ public class DeviceInventoryResource {
     }
 
     @ApiOperation(value = "Request inventory scan on device", authorizations = {@Authorization("Bearer Token")})
-    @POST
+    @GET
     @Path("/private/scan/{deviceNumber}")
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response requestScan(@PathParam("deviceNumber") String deviceNumber) {
         if (!hasAccess()) {
