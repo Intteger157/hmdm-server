@@ -1,0 +1,19 @@
+{
+  "breadcrumb.plugin.deviceremote.main": "Удалённое управление",
+  "plugin.deviceremote.localization.key.name": "Удалённое управление",
+  "plugin.deviceremote.tab.hint": "Настройте URL remote-сервера в настройках плагина, затем выберите устройство в списке Devices и откройте пункт «Удалённое управление».",
+  "plugin.deviceremote.modal.title": "Удалённое управление",
+  "plugin.deviceremote.modal.device": "Устройство:",
+  "plugin.deviceremote.modal.hint": "После запуска откройте viewer в новой вкладке браузера. Агент на устройстве стартует автоматически при наличии связи.",
+  "plugin.deviceremote.label.status": "Статус сессии",
+  "plugin.deviceremote.label.agentStatus": "Статус агента",
+  "plugin.deviceremote.label.session": "Сессия / PIN",
+  "plugin.deviceremote.label.serverUrl": "URL remote-сервера",
+  "plugin.deviceremote.label.serverSecret": "Secret remote-сервера",
+  "plugin.deviceremote.button.start": "Запустить remote-сессию",
+  "plugin.deviceremote.button.stop": "Остановить remote-сессию",
+  "plugin.deviceremote.button.openViewer": "Открыть viewer",
+  "plugin.deviceremote.error.empty.serverUrl": "Укажите URL remote-сервера",
+  "plugin.deviceremote.settings.saved": "Настройки remote control сохранены",
+  "plugin.deviceremote.settings.hint": "Укажите URL web-admin Headwind Remote (aPuppet), например https://remote.example.com/web-admin/"
+}

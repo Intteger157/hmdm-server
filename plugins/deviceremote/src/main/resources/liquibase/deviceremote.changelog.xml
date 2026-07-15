@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.0.xsd"
+        logicalFilePath="deviceremote.changelog.xml">
+
+    <changeSet id="plugin-deviceremote-06.06.2026-14:00" author="custom" context="common">
+        <comment>Plugin,new: deviceremote</comment>
+        <sql>
+            INSERT INTO plugins (
+            identifier, name, description,
+            javascriptModuleFile,
+            functionsViewTemplate,
+            settingsViewTemplate,
+            namelocalizationkey,
+            settingsPermission, functionsPermission, deviceFunctionsPermission,
+            enabledForDevice
+            )
+            VALUES (
+            'deviceremote', 'Device Remote', 'Unattended remote control via Headwind Remote (aPuppet)',
+            'app/components/plugins/deviceremote/deviceremote.module.js',
+            'app/components/plugins/deviceremote/views/deviceremote.html',
+            'app/components/plugins/deviceremote/views/deviceremote.settings.html',
+            'plugin.deviceremote.localization.key.name',
+            'plugin_deviceremote_access',
+            'plugin_deviceremote_access',
+            'plugin_deviceremote_access',
+            TRUE
+            );
+        </sql>
+        <rollback>
+            DELETE FROM plugins WHERE identifier = 'deviceremote';
+        </rollback>
+    </changeSet>
+
+    <changeSet id="plugin-deviceremote-06.06.2026-14:01" author="custom" context="common">
+        <comment>Permission,new: plugin_deviceremote_access</comment>
+        <sql>
+            INSERT INTO permissions (name, description)
+            VALUES ('plugin_deviceremote_access', 'Remote control of devices');
+            INSERT INTO userRolePermissions (roleId, permissionId)
+            SELECT id, currval('permissions_id_seq')
+            FROM userroles;
+        </sql>
+        <rollback>
+            DELETE FROM permissions WHERE name = 'plugin_deviceremote_access';
+        </rollback>
+    </changeSet>
+
+    <changeSet id="plugin-deviceremote-06.06.2026-14:02" author="custom" context="common">
+        <comment>Table,new: plugin_deviceremote_settings</comment>
+        <sql>
+            CREATE TABLE plugin_deviceremote_settings (
+                id serial NOT NULL CONSTRAINT plugin_deviceremote_settings_pr_key PRIMARY KEY,
+                customerId INT NOT NULL UNIQUE REFERENCES customers (id) ON DELETE CASCADE,
+                serverUrl VARCHAR(500) NOT NULL DEFAULT '',
+                serverSecret VARCHAR(200) NOT NULL DEFAULT ''
+            );
+        </sql>
+        <rollback>
+            DROP TABLE plugin_deviceremote_settings;
+        </rollback>
+    </changeSet>
+
+    <changeSet id="plugin-deviceremote-06.06.2026-14:03" author="custom" context="common">
+        <comment>Table,new: plugin_deviceremote_session</comment>
+        <sql>
+            CREATE TABLE plugin_deviceremote_session (
+                id serial NOT NULL CONSTRAINT plugin_deviceremote_session_pr_key PRIMARY KEY,
+                customerId INT NOT NULL REFERENCES customers (id) ON DELETE CASCADE,
+                deviceId INT NOT NULL UNIQUE REFERENCES devices (id) ON DELETE CASCADE,
+                sessionId VARCHAR(32),
+                password VARCHAR(16),
+                status VARCHAR(32) NOT NULL DEFAULT 'idle',
+                agentStatus VARCHAR(32),
+                requestedAt BIGINT,
+                updatedAt BIGINT
+            );
+        </sql>
+        <rollback>
+            DROP TABLE plugin_deviceremote_session;
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

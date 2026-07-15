@@ -1,0 +1,19 @@
+{
+  "breadcrumb.plugin.deviceremote.main": "Remote control",
+  "plugin.deviceremote.localization.key.name": "Remote control",
+  "plugin.deviceremote.tab.hint": "Configure the remote server in plugin settings, then select a device in the Devices list and use Remote control from the plugin menu.",
+  "plugin.deviceremote.modal.title": "Remote control",
+  "plugin.deviceremote.modal.device": "Device:",
+  "plugin.deviceremote.modal.hint": "After starting, open the viewer in a new browser tab. The device agent starts automatically when online.",
+  "plugin.deviceremote.label.status": "Session status",
+  "plugin.deviceremote.label.agentStatus": "Agent status",
+  "plugin.deviceremote.label.session": "Session / PIN",
+  "plugin.deviceremote.label.serverUrl": "Remote server URL",
+  "plugin.deviceremote.label.serverSecret": "Remote server secret",
+  "plugin.deviceremote.button.start": "Start remote session",
+  "plugin.deviceremote.button.stop": "Stop remote session",
+  "plugin.deviceremote.button.openViewer": "Open viewer",
+  "plugin.deviceremote.error.empty.serverUrl": "Enter the remote server URL",
+  "plugin.deviceremote.settings.saved": "Remote control settings saved",
+  "plugin.deviceremote.settings.hint": "Use the Headwind Remote (aPuppet) web-admin URL, e.g. https://remote.example.com/web-admin/"
+}

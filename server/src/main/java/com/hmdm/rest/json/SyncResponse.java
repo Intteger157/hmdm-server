@@ -290,6 +290,26 @@ public class SyncResponse implements Serializable, SyncResponseInt {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String passwordReset;
 
+    @ApiModelProperty("Start remote control agent on device")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean remoteControlStart;
+
+    @ApiModelProperty("Stop remote control agent on device")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean remoteControlStop;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String remoteControlSessionId;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String remoteControlPassword;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String remoteControlServerUrl;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String remoteControlSecret;
+
     public SyncResponse() {
     }
 
@@ -972,5 +992,65 @@ public class SyncResponse implements Serializable, SyncResponseInt {
     @Override
     public void setPasswordReset(String passwordReset) {
         this.passwordReset = passwordReset;
+    }
+
+    @Override
+    public Boolean getRemoteControlStart() {
+        return remoteControlStart;
+    }
+
+    @Override
+    public void setRemoteControlStart(Boolean remoteControlStart) {
+        this.remoteControlStart = remoteControlStart;
+    }
+
+    @Override
+    public Boolean getRemoteControlStop() {
+        return remoteControlStop;
+    }
+
+    @Override
+    public void setRemoteControlStop(Boolean remoteControlStop) {
+        this.remoteControlStop = remoteControlStop;
+    }
+
+    @Override
+    public String getRemoteControlSessionId() {
+        return remoteControlSessionId;
+    }
+
+    @Override
+    public void setRemoteControlSessionId(String remoteControlSessionId) {
+        this.remoteControlSessionId = remoteControlSessionId;
+    }
+
+    @Override
+    public String getRemoteControlPassword() {
+        return remoteControlPassword;
+    }
+
+    @Override
+    public void setRemoteControlPassword(String remoteControlPassword) {
+        this.remoteControlPassword = remoteControlPassword;
+    }
+
+    @Override
+    public String getRemoteControlServerUrl() {
+        return remoteControlServerUrl;
+    }
+
+    @Override
+    public void setRemoteControlServerUrl(String remoteControlServerUrl) {
+        this.remoteControlServerUrl = remoteControlServerUrl;
+    }
+
+    @Override
+    public String getRemoteControlSecret() {
+        return remoteControlSecret;
+    }
+
+    @Override
+    public void setRemoteControlSecret(String remoteControlSecret) {
+        this.remoteControlSecret = remoteControlSecret;
     }
 }

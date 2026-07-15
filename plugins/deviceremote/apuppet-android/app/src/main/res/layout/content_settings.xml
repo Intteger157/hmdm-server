@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SettingsActivity">
+
+    <TextView
+        android:id="@+id/server_url_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/server_url"
+        android:layout_marginRight="@dimen/margin_std"
+        app:layout_constraintRight_toLeftOf="@+id/server_url"
+        app:layout_constraintBaseline_toBaselineOf="@id/server_url" />
+
+    <EditText
+        android:id="@+id/server_url"
+        android:layout_width="@dimen/settings_edit_text_width"
+        android:layout_height="wrap_content"
+        android:hint="@string/server_url_hint"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.2"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintHorizontal_bias="0.7"
+        app:layout_constraintRight_toRightOf="parent"/>
+
+    <TextView
+        android:id="@+id/secret_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/secret"
+        android:layout_marginRight="@dimen/margin_std"
+        app:layout_constraintRight_toLeftOf="@+id/server_url"
+        app:layout_constraintBaseline_toBaselineOf="@id/secret" />
+
+    <EditText
+        android:id="@+id/secret"
+        android:inputType="textPassword"
+        android:layout_width="@dimen/settings_edit_text_width"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_std"
+        app:layout_constraintTop_toBottomOf="@+id/server_url"
+        app:layout_constraintLeft_toLeftOf="@+id/server_url"/>
+
+    <TextView
+        android:id="@+id/use_default_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/use_default"
+        android:gravity="right"
+        android:layout_marginRight="@dimen/margin_std"
+        app:layout_constraintRight_toLeftOf="@+id/server_url"
+        app:layout_constraintBaseline_toBaselineOf="@id/use_default" />
+
+    <CheckBox
+        android:id="@+id/use_default"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_std"
+        app:layout_constraintTop_toBottomOf="@+id/secret"
+        app:layout_constraintLeft_toLeftOf="@+id/server_url"/>
+
+    <TextView
+        android:id="@+id/translate_audio_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/translate_audio"
+        android:layout_marginRight="@dimen/margin_std"
+        android:visibility="gone"
+        app:layout_constraintRight_toLeftOf="@+id/server_url"
+        app:layout_constraintBaseline_toBaselineOf="@id/translate_audio" />
+
+    <CheckBox
+        android:id="@+id/translate_audio"
+        android:layout_width="@dimen/settings_edit_text_width"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_std"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/use_default"
+        app:layout_constraintLeft_toLeftOf="@+id/server_url"/>
+
+    <TextView
+        android:id="@+id/bitrate_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/bitrate"
+        android:layout_marginRight="@dimen/margin_std"
+        app:layout_constraintRight_toLeftOf="@+id/server_url"
+        app:layout_constraintBaseline_toBaselineOf="@id/bitrate" />
+
+    <Spinner
+        android:id="@+id/bitrate"
+        android:layout_width="@dimen/settings_edit_text_width"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_std"
+        android:entries="@array/bitrates"
+        app:layout_constraintTop_toBottomOf="@+id/translate_audio"
+        app:layout_constraintLeft_toLeftOf="@+id/server_url"
+        />
+
+
+    <TextView
+        android:id="@+id/frame_rate_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/frame_rate"
+        android:layout_marginRight="@dimen/margin_std"
+        app:layout_constraintRight_toLeftOf="@+id/server_url"
+        app:layout_constraintBaseline_toBaselineOf="@id/frame_rate" />
+
+    <Spinner
+        android:id="@+id/frame_rate"
+        android:layout_width="@dimen/settings_edit_text_width"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_std"
+        android:entries="@array/frame_rates"
+        app:layout_constraintTop_toBottomOf="@+id/bitrate"
+        app:layout_constraintLeft_toLeftOf="@+id/server_url"
+        />
+
+    <TextView
+        android:id="@+id/device_name_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/device_name"
+        android:layout_marginRight="@dimen/margin_std"
+        app:layout_constraintRight_toLeftOf="@+id/server_url"
+        app:layout_constraintBaseline_toBaselineOf="@id/device_name" />
+
+    <EditText
+        android:id="@+id/device_name"
+        android:layout_width="@dimen/settings_edit_text_width"
+        android:layout_height="wrap_content"
+        android:hint="@string/device_name_hint"
+        android:layout_marginTop="@dimen/margin_std"
+        app:layout_constraintTop_toBottomOf="@+id/frame_rate"
+        app:layout_constraintLeft_toLeftOf="@+id/server_url"/>
+
+    <TextView
+        android:id="@+id/notify_sharing_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/notify_sharing"
+        android:gravity="right"
+        android:layout_marginRight="@dimen/margin_std"
+        app:layout_constraintRight_toLeftOf="@+id/server_url"
+        app:layout_constraintBaseline_toBaselineOf="@id/notify_sharing" />
+
+    <CheckBox
+        android:id="@+id/notify_sharing"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_std"
+        app:layout_constraintTop_toBottomOf="@+id/device_name"
+        app:layout_constraintLeft_toLeftOf="@+id/server_url"/>
+
+    <TextView
+        android:id="@+id/exit_on_idle_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/exit_on_idle"
+        android:layout_marginRight="@dimen/margin_std"
+        app:layout_constraintRight_toLeftOf="@+id/server_url"
+        app:layout_constraintBaseline_toBaselineOf="@id/exit_on_idle" />
+
+    <Spinner
+        android:id="@+id/exit_on_idle"
+        android:layout_width="@dimen/settings_edit_text_width"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_std"
+        android:entries="@array/idle_timeouts"
+        app:layout_constraintTop_toBottomOf="@+id/notify_sharing"
+        app:layout_constraintLeft_toLeftOf="@+id/server_url"
+        />
+
+    <TextView
+        android:visibility="gone"
+        android:id="@+id/test_src_ip_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:text="@string/src_ip"
+        android:layout_marginRight="@dimen/margin_std"
+        app:layout_constraintRight_toLeftOf="@+id/server_url"
+        app:layout_constraintBaseline_toBaselineOf="@id/test_src_ip" />
+
+    <EditText
+        android:visibility="gone"
+        android:id="@+id/test_src_ip"
+        android:editable="false"
+        android:layout_width="@dimen/settings_edit_text_width"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_std"
+        app:layout_constraintTop_toBottomOf="@+id/exit_on_idle"
+        app:layout_constraintLeft_toLeftOf="@+id/server_url"/>
+
+
+    <TextView
+        android:visibility="gone"
+        android:id="@+id/test_dst_ip_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/dst_ip"
+        android:layout_marginRight="@dimen/margin_std"
+        app:layout_constraintRight_toLeftOf="@+id/server_url"
+        app:layout_constraintBaseline_toBaselineOf="@id/test_dst_ip" />
+
+    <EditText
+        android:visibility="gone"
+        android:id="@+id/test_dst_ip"
+        android:hint="@string/dst_ip_hint"
+        android:layout_width="@dimen/settings_edit_text_width"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_std"
+        app:layout_constraintTop_toBottomOf="@+id/test_src_ip"
+        app:layout_constraintLeft_toLeftOf="@+id/server_url"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

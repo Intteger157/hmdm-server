@@ -184,4 +184,28 @@ public interface SyncResponseInt {
     String getPasswordReset();
 
     void setPasswordReset(String passwordReset);
+
+    Boolean getRemoteControlStart();
+
+    void setRemoteControlStart(Boolean remoteControlStart);
+
+    Boolean getRemoteControlStop();
+
+    void setRemoteControlStop(Boolean remoteControlStop);
+
+    String getRemoteControlSessionId();
+
+    void setRemoteControlSessionId(String remoteControlSessionId);
+
+    String getRemoteControlPassword();
+
+    void setRemoteControlPassword(String remoteControlPassword);
+
+    String getRemoteControlServerUrl();
+
+    void setRemoteControlServerUrl(String remoteControlServerUrl);
+
+    String getRemoteControlSecret();
+
+    void setRemoteControlSecret(String remoteControlSecret);
 }

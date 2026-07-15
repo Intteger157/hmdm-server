@@ -1,0 +1,90 @@
+<resources>
+    <string name="app_name">aPuppet - Remote Control</string>
+    <string name="about_title">aPuppet</string>
+    <string name="about_message">\n\nMobile agent for the open source Android remote control service.\n\nVersion: %s\n\nVariant: %s\n\n(c) 2020 apuppet.org</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_about">About</string>
+    <string name="back_pressed">Tap Home to hide the screen. To stop screen sharing, open the plugin activity through the "Recents" button.</string>
+    <string name="accessibility_service_description">Accessibility service is used to simulate touch screen events for remote control of the device.</string>
+    <string name="state_disconnected">Disconnected</string>
+    <string name="state_connecting">Connecting</string>
+    <string name="state_connected">Connected</string>
+    <string name="state_sharing">Sharing</string>
+    <string name="state_disconnecting">Disconnecting</string>
+    <string name="connect">Connect</string>
+    <string name="disconnect_exit">Disconnect and exit</string>
+    <string name="connection_error">Failed to connect to %s: %s</string>
+    <string name="session_id">Session ID</string>
+    <string name="password">Password</string>
+    <string name="server_url">Server URL</string>
+    <string name="server_url_hint">Type URL here</string>
+    <string name="secret">Secret</string>
+    <string name="use_default">Use defaults</string>
+    <string name="use_default_hint">Reset the server URL and secret to their default values?</string>
+    <string name="button_use_default">Use defaults</string>
+    <string name="translate_audio">Translate audio</string>
+    <string name="bitrate">Bitrate</string>
+    <string name="frame_rate">Frame rate</string>
+    <string name="enter_correct_url">Please enter a correct server URL starting with http:// or https://</string>
+    <string name="enter_secret">Please enter a non-empty secret</string>
+    <string name="enter_device_name">Please enter a non-empty device name</string>
+    <string name="accessibility_hint">This app uses accessibility service to simulate user interface events. The accessibility permissions screen will now open. Please grant accessibility permissions to the "aPuppet" app.</string>
+    <string name="continue_button">Continue</string>
+    <string name="device_name">Device name</string>
+    <string name="device_name_hint">E.g. My Device</string>
+    <string name="src_ip">Device IP</string>
+    <string name="dst_ip">Target IP</string>
+    <string name="dst_ip_hint">For testing only</string>
+    <string name="hint_connection_error">There was an error connecting to %s. Please check your Internet connection and try again.</string>
+    <string name="hint_connecting">Connecting to %s, please wait...</string>
+    <string name="hint_connected">Ready to be remotely controlled. Please send the server URL (%s), session ID, and password to the supervisor.</string>
+    <string name="hint_sharing">A supervisor (%s) is remotely controlling your device!</string>
+    <string name="hint_disconnecting">Gracefully closing the connection, please wait...</string>
+    <string name="settings_unavailable">You cannot change settings when your device is controlled. Please stop the remote controlling first.</string>
+    <string name="audio_permission_request">Please allow this app to record audio so your voice can be translated to the supervisor.</string>
+    <string name="cancel">Cancel</string>
+    <string name="screen_cast_denied">Session aborted because the screen cast permission not granted. Please allow screen sharing to enable the remote control session!</string>
+    <string name="sharing_error">Attempt to share the screen is failed! Looks like the app is not compatible with your device, sorry for that!</string>
+    <string name="notification_text">Your device is remotely controlled!</string>
+    <string name="share_start_text">Your device is remotely controlled!</string>
+    <string name="ok">OK</string>
+    <string name="notify_sharing">Flash when\n sharing</string>
+    <string name="overlay_hint">To show a flashing dot when the device is controlled, the app needs to draw overlays. Please click "Continue" and grant this permission to the "aPuppet" app.</string>
+    <string name="notify_sharing_hint">Setting \"Flash when sharing\" improves screen sharing quality.</string>
+    <string name="connection_failure_hint">Failed to establish connection due to an internal error. Please retry, or exit the app and try again.</string>
+    <string name="send_link">Send a remote control link</string>
+    <string name="send_link_subject">Android device remote control invitation</string>
+    <string name="send_link_message">Please connect to my Android device (%s) remotely using the aPuppet service: %s</string>
+    <string name="send_link_failed">Failed to share a link, please contact the technical support!</string>
+    <string name="send_link_chooser">How to send a link?</string>
+    <string name="app_idle_warning">The application is idle and will be stopped in %d sec!</string>
+    <string name="app_idle_exit">The application is stopped because it\'s idle!</string>
+    <string name="button_exit">Exit</string>
+    <string name="button_keep_idle">Keep running</string>
+    <string name="app_sharing_session_ping_timeout">The remote control session is stopped because there\'s no connection with the server!</string>
+    <string name="exit_on_idle">Exit if idle</string>
+
+    <string-array name="bitrates">
+        <item>128 kbps</item>
+        <item>256 kbps</item>
+        <item>512 kbps</item>
+        <item>768 kbps</item>
+        <item>1024 kbps</item>
+    </string-array>
+
+    <string-array name="frame_rates">
+        <item>5 fps</item>
+        <item>10 fps</item>
+        <item>15 fps</item>
+        <item>20 fps</item>
+    </string-array>
+
+    <string-array name="idle_timeouts">
+        <item>1 minute</item>
+        <item>2 minutes</item>
+        <item>5 minutes</item>
+        <item>10 minutes</item>
+        <item>30 minutes</item>
+        <item>Never</item>
+    </string-array>
+</resources>
