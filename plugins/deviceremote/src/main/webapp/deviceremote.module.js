@@ -17,6 +17,24 @@ angular.module('plugin-deviceremote', ['ngResource', 'ui.bootstrap', 'ui.router'
         } catch (e) {
             console.log('An error when adding state plugin-deviceremote', e);
         }
+
+        try {
+            $stateProvider.state('plugin-settings-deviceremote', {
+                url: "/" + 'plugin-settings-deviceremote',
+                templateUrl: 'app/components/main/view/content.html',
+                controller: 'TabController',
+                ncyBreadcrumb: {
+                    label: '{{"breadcrumb.plugin.deviceremote.main" | localize}}',
+                },
+                resolve: {
+                    openTab: function () {
+                        return 'plugin-settings-deviceremote';
+                    }
+                },
+            });
+        } catch (e) {
+            console.log('An error when adding state plugin-settings-deviceremote', e);
+        }
     })
     .factory('pluginDeviceRemoteService', function ($resource) {
         return $resource('', {}, {
