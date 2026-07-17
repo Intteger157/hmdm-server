@@ -112,12 +112,20 @@ angular.module('plugin-deviceremote', ['ngResource', 'ui.bootstrap', 'ui.router'
         };
 
         refreshStatus();
-        var pollTimer = $interval(refreshStatus, 5000);
+        var pollTimer = $interval(refreshStatus, 1500);
         $scope.$on('$destroy', function () {
             if (pollTimer) {
                 $interval.cancel(pollTimer);
             }
         });
+
+        $scope.canOpenViewer = function () {
+            if (!$scope.status || !$scope.status.viewerUrl) {
+                return false;
+            }
+            var agent = ($scope.status.agentStatus || '').toLowerCase();
+            return agent === 'ready' || agent === 'sharing';
+        };
 
         var runAction = function (requestFactory, onSuccess) {
             $scope.errorMessage = undefined;

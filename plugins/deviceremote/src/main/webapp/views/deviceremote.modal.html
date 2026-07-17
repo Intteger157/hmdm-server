@@ -20,9 +20,10 @@
     <div class="btn-toolbar">
         <button class="btn btn-primary" ng-click="startRemote()" ng-disabled="busy" localized>plugin.deviceremote.button.start</button>
         <button class="btn btn-warning" ng-click="stopRemote()" ng-disabled="busy" localized>plugin.deviceremote.button.stop</button>
-        <button class="btn btn-success" ng-click="openViewer()" ng-disabled="!status.viewerUrl" localized>plugin.deviceremote.button.openViewer</button>
+        <button class="btn btn-success" ng-click="openViewer()" ng-disabled="!canOpenViewer()" localized>plugin.deviceremote.button.openViewer</button>
     </div>
 
+    <p class="help-block" ng-if="!canOpenViewer() && status.viewerUrl" localized>plugin.deviceremote.modal.waitReady</p>
     <p class="help-block" localized>plugin.deviceremote.modal.hint</p>
 </div>
 <div class="modal-footer">

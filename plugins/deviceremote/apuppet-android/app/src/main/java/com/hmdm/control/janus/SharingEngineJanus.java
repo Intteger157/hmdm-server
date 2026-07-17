@@ -292,6 +292,14 @@ public class SharingEngineJanus extends SharingEngine {
         password = null;
     }
 
+    /**
+     * TextRoom WebRTC is up and DataChannel is open — safe for the browser to join.
+     */
+    public boolean isControlChannelHealthy() {
+        JanusTextRoomPlugin plugin = janusTextRoomPlugin;
+        return plugin != null && plugin.isControlChannelHealthy();
+    }
+
     @Override
     public int getAudioPort() {
         if (janusStreamingPlugin != null) {

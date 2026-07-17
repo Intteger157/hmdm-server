@@ -60,6 +60,7 @@ public class JanusTextRoomPlugin extends JanusPlugin {
     private final Object dcOpenLock = new Object();
     private volatile boolean dataChannelOpen;
     private volatile boolean webRtcUp;
+    private volatile boolean iceConnected;
     private volatile boolean dataChannelReadyNotified;
     private volatile boolean iceRestartAttempted;
     private volatile boolean iceRestartInProgress;
@@ -96,6 +97,15 @@ public class JanusTextRoomPlugin extends JanusPlugin {
 
     public PeerConnection getPeerConnection() {
         return peerConnection;
+    }
+
+    /**
+     * True when TextRoom DataChannel can deliver join/ping/pong (viewer must not connect before this).
+     */
+    public boolean isControlChannelHealthy() {
+        return iceConnected && dataChannelOpen
+                && dataChannel != null
+                && dataChannel.state() == DataChannel.State.OPEN;
     }
 
     @Override
@@ -135,15 +145,18 @@ public class JanusTextRoomPlugin extends JanusPlugin {
                 Log.i(Const.LOG_TAG, "Textroom plugin: iceConnectionState changed to " + iceConnectionState);
                 if (iceConnectionState == PeerConnection.IceConnectionState.CONNECTED
                         || iceConnectionState == PeerConnection.IceConnectionState.COMPLETED) {
+                    iceConnected = true;
                     iceRestartAttempted = false;
                     iceRestartInProgress = false;
                     maybeNotifyDataChannelReady();
                     startDataChannelKeepalive();
                 } else if (iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED) {
+                    iceConnected = false;
                     // Transient; WebRTC often recovers without restart.
                     Log.w(Const.LOG_TAG, "ICE temporarily disconnected, waiting for recovery");
                     startDataChannelKeepalive();
                 } else if (iceConnectionState == PeerConnection.IceConnectionState.FAILED && appContext != null) {
+                    iceConnected = false;
                     if (!iceRestartAttempted && !iceRestartInProgress && peerConnection != null) {
                         iceRestartAttempted = true;
                         iceRestartInProgress = true;
@@ -152,6 +165,8 @@ public class JanusTextRoomPlugin extends JanusPlugin {
                         return;
                     }
                     notifyIceConnectionFailed();
+                } else if (iceConnectionState == PeerConnection.IceConnectionState.CLOSED) {
+                    iceConnected = false;
                 }
             }
 

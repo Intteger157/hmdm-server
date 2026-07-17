@@ -263,7 +263,8 @@ public class DeviceRemoteResource {
         if (report != null && report.getAgentStatus() != null) {
             session.setAgentStatus(report.getAgentStatus());
             if ("sharing".equalsIgnoreCase(report.getAgentStatus())
-                    || "connected".equalsIgnoreCase(report.getAgentStatus())) {
+                    || "connected".equalsIgnoreCase(report.getAgentStatus())
+                    || "ready".equalsIgnoreCase(report.getAgentStatus())) {
                 session.setStatus(DeviceRemoteSession.STATUS_ACTIVE);
             } else if ("failed".equalsIgnoreCase(report.getAgentStatus())) {
                 session.setStatus(DeviceRemoteSession.STATUS_FAILED);

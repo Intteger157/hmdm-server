@@ -74,11 +74,17 @@ public class MainActivity extends AppCompatActivity implements SharingEngineJanu
     private static final int SHARE_START_GRACE_MS = 20000;
     private static final int SHARE_LEAVE_DEBOUNCE_MS = 3000;
     private static final int ICE_FAILURE_RECONNECT_MAX = 2;
+    // ColorOS often flaps TextRoom ICE for ~10–20s after VirtualDisplay starts; delay "ready"
+    // so MDM Open Viewer is not used during that window (first Connect → browser Disconnected).
+    private static final long READY_REPORT_DELAY_MS = 12000L;
+    private static final long READY_REPORT_RETRY_MS = 500L;
     private int accessibilityRetryCount = 0;
     private int iceFailureReconnectAttempts = 0;
     private int sessionFetchGeneration = 0;
     private Runnable accessibilityRetryRunnable;
     private Runnable pendingStopSharingRunnable;
+    private Runnable reportReadyRunnable;
+    private boolean readyStatusReported;
 
     private boolean screenCaptureGranted;
     private boolean screenCaptureRequestPending;
@@ -98,10 +104,13 @@ public class MainActivity extends AppCompatActivity implements SharingEngineJanu
             if (intent.getAction().equals(Const.ACTION_SCREEN_SHARING_START)) {
                 sharingActive = true;
                 notifySharingStart();
+                scheduleReadyStatusReport();
 
             } else if (intent.getAction().equals(Const.ACTION_SCREEN_SHARING_STOP)) {
                 sharingActive = false;
                 lastShareStartMs = 0;
+                readyStatusReported = false;
+                cancelReadyStatusReport();
                 clearScreenCaptureConsent();
                 notifySharingStop();
                 adminName = null;
@@ -116,6 +125,8 @@ public class MainActivity extends AppCompatActivity implements SharingEngineJanu
                 }
                 sharingActive = false;
                 lastShareStartMs = 0;
+                readyStatusReported = false;
+                cancelReadyStatusReport();
                 clearScreenCaptureConsent();
                 adminName = null;
                 updateUI();
@@ -846,6 +857,8 @@ public class MainActivity extends AppCompatActivity implements SharingEngineJanu
         screenCaptureResultData = null;
         sharingActive = false;
         lastShareStartMs = 0;
+        readyStatusReported = false;
+        cancelReadyStatusReport();
         sharingEngine.setUsername(settingsHelper.getString(SettingsHelper.KEY_DEVICE_NAME));
         sharingEngine.connect(this, sessionId, password, (success, errorReason) -> {
             if (!success) {
@@ -871,6 +884,8 @@ public class MainActivity extends AppCompatActivity implements SharingEngineJanu
         updateUI();
         cancelExitOnIdle();
         scheduleSharingTimeout();
+        cancelReadyStatusReport();
+        readyStatusReported = true;
         MdmReporter.reportAgentStatus(settingsHelper, sessionId, "sharing");
         // Browser join/leave/rejoin after share already started must not re-prompt consent
         // (token was consumed on first start; a second dialog is what makes "first attempt fail").
@@ -929,6 +944,8 @@ public class MainActivity extends AppCompatActivity implements SharingEngineJanu
 
     private void stopSharingAfterAdminLeft() {
         sharingActive = false;
+        readyStatusReported = false;
+        cancelReadyStatusReport();
         clearScreenCaptureConsent();
         lastShareStartMs = 0;
         notifySharingStop();
@@ -1082,6 +1099,52 @@ public class MainActivity extends AppCompatActivity implements SharingEngineJanu
             handler.postDelayed(overlayDotRunnable, OVERLAY_DOT_ANIMATION_DELAY);
         }
     };
+
+    /**
+     * Report MDM agentStatus=ready only after capture is up and TextRoom ICE has settled.
+     * Opening the viewer while ICE is flapping causes browser "Disconnected" on first Connect.
+     */
+    private void scheduleReadyStatusReport() {
+        cancelReadyStatusReport();
+        readyStatusReported = false;
+        reportReadyRunnable = this::tryReportReadyStatus;
+        Log.i(Const.LOG_TAG, "Scheduling ready status report in " + READY_REPORT_DELAY_MS + "ms");
+        handler.postDelayed(reportReadyRunnable, READY_REPORT_DELAY_MS);
+    }
+
+    private void cancelReadyStatusReport() {
+        if (reportReadyRunnable != null) {
+            handler.removeCallbacks(reportReadyRunnable);
+            reportReadyRunnable = null;
+        }
+    }
+
+    private void tryReportReadyStatus() {
+        reportReadyRunnable = null;
+        if (!sharingActive || sessionId == null) {
+            return;
+        }
+        if (adminName != null) {
+            // Admin already joined — onStartSharing reports "sharing".
+            return;
+        }
+        if (!isControlChannelHealthy()) {
+            Log.d(Const.LOG_TAG, "Deferring ready status: TextRoom control channel not healthy yet");
+            reportReadyRunnable = this::tryReportReadyStatus;
+            handler.postDelayed(reportReadyRunnable, READY_REPORT_RETRY_MS);
+            return;
+        }
+        readyStatusReported = true;
+        Log.i(Const.LOG_TAG, "Reporting MDM agentStatus=ready (capture up, TextRoom ICE healthy)");
+        MdmReporter.reportAgentStatus(settingsHelper, sessionId, "ready");
+    }
+
+    private boolean isControlChannelHealthy() {
+        if (sharingEngine instanceof SharingEngineJanus) {
+            return ((SharingEngineJanus) sharingEngine).isControlChannelHealthy();
+        }
+        return true;
+    }
 
     private void notifySharingStart() {
         notifyGestureService(Const.ACTION_SCREEN_SHARING_START);
