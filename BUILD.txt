@@ -34,6 +34,19 @@ and update the contents of the server/build.properties file.
 
 # mvn install
 
+Alternatively (Docker Maven; recommended on a VPS with Docker already installed for MDM):
+
+# docker run --rm \
+#   -v "$(pwd)":/usr/src/mymaven \
+#   -v "$HOME/.m2":/root/.m2 \
+#   -w /usr/src/mymaven \
+#   maven:3.8.6-openjdk-11 \
+#   mvn clean package -pl server -am -DskipTests
+
+# Output WAR: server/target/launcher.war
+# This WAR includes bundled plugins (deviceremote, devicelocation, devicereset, …).
+# See README.md for Docker deploy and MDM+Remote HAProxy co-hosting.
+
 6. Create the PostgreSQL database and user
 
 # sudo su postgres

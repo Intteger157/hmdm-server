@@ -1,6 +1,9 @@
-# Device Remote Control plugin (Intermark)
+# Device Remote Control plugin
 
-MDM plugin for **unattended remote control** via [Headwind Remote / aPuppet](https://github.com/MrYoda/apuppet-android).
+MDM plugin for **unattended remote control** via Headwind Remote / aPuppet.
+
+Companion server: [https://github.com/Intteger157/h-mdm-remote-control](https://github.com/Intteger157/h-mdm-remote-control)  
+Parent MDM fork: [https://github.com/Intteger157/hmdm-server](https://github.com/Intteger157/hmdm-server) (see root `README.md` for WAR build + HAProxy co-host)
 
 ## Architecture
 
@@ -19,35 +22,36 @@ Admin UI (deviceremote plugin)
 |------|---------|
 | `plugins/deviceremote/` | MDM server plugin (Java + Angular UI) |
 | `plugins/deviceremote/apuppet-android/` | Patched Android agent (`com.hmdm.control`) |
-| `plugins/deviceremote/h-mdm-remote-control/` | Headwind Remote server (Janus/WebRTC), Ubuntu 22.04/24.04 |
+| `plugins/deviceremote/h-mdm-remote-control/` | Optional local Remote server checkout |
 | `android-launcher/` | Launcher patches: `RemoteControlHelper`, sync handling |
 
 ## Server deploy
 
-1. Build WAR (includes plugin):
+1. Build custom WAR (includes this plugin and others — see root README):
 
 ```bash
 docker run --rm -v "$(pwd)":/usr/src/mymaven -v "$HOME/.m2":/root/.m2 -w /usr/src/mymaven \
   maven:3.8.6-openjdk-11 mvn clean package -pl server -am -DskipTests
 ```
 
-2. Deploy WAR to Docker as usual (`down && up`).
+2. Deploy `server/target/launcher.war` into MDM Docker (`volumes/webapps/ROOT.war`).
 
 3. Enable plugin in **Plugins** (should auto-register via Liquibase).
 
-4. **Plugins → Remote control → Settings**: set aPuppet web-admin URL and secret, e.g.  
-   `https://remote.intermark.global/web-admin/`
+4. **Plugins → Remote control → Settings**: set web-admin URL and secret, e.g.  
+   `https://remote.example.com/web-admin/`
 
 ## Headwind Remote server
 
-Deploy on Ubuntu **22.04 or 24.04** (same host as MDM is OK if ports differ):
+Deploy on Ubuntu **22.04 or 24.04**. Same host as MDM is supported via HAProxy:
 
 ```bash
 git clone https://github.com/Intteger157/h-mdm-remote-control.git
 cd h-mdm-remote-control
-# edit config.yaml — see INSTALL-INTERMARK.md (use web_https_port: 9443 if MDM uses 443)
+# edit config.yaml — see INSTALL-UBUNTU.md (web_https_port: 9443 when sharing :443)
 sudo ./install.sh
 cat deploy/dist/credentials/janus_api_secret
+sudo scripts/single-port/setup-single-port.sh   # after MDM listens on 127.0.0.1:8443
 ```
 
 Use the **same secret** in MDM plugin settings and in agent `build.gradle` (`DEFAULT_SECRET`).
@@ -56,7 +60,7 @@ Use the **same secret** in MDM plugin settings and in agent `build.gradle` (`DEF
 
 ### 1. Launcher (required)
 
-Rebuild and roll out your Intermark launcher (`6.36.x-intermark`) — includes remote control integration.
+Rebuild and roll out the custom launcher from `android-launcher/` — includes remote control integration.
 
 ### 2. Remote agent `com.hmdm.control`
 
