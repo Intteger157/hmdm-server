@@ -12,6 +12,7 @@ import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -93,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements SharingEngineJanu
     private Runnable pendingStopSharingRunnable;
     private Runnable reportReadyRunnable;
     private Runnable prepareScreenCaptureWhenStableRunnable;
+    private Runnable forceKeyframesForViewerRunnable;
     private boolean readyStatusReported;
 
     private boolean screenCaptureGranted;
@@ -114,12 +116,17 @@ public class MainActivity extends AppCompatActivity implements SharingEngineJanu
                 sharingActive = true;
                 notifySharingStart();
                 scheduleReadyStatusReport();
+                // Admin may already be in the room (viewer waiting); push IDRs for Janus videobufferkf.
+                if (adminName != null) {
+                    scheduleForceKeyframesForViewer();
+                }
 
             } else if (intent.getAction().equals(Const.ACTION_SCREEN_SHARING_STOP)) {
                 sharingActive = false;
                 lastShareStartMs = 0;
                 readyStatusReported = false;
                 cancelReadyStatusReport();
+                cancelForceKeyframesForViewer();
                 // Do not clear pending consent: ICE reconnect used to stop the service while the
                 // system dialog was still up, which cleared state and caused another consent request.
                 if (!screenCaptureRequestPending) {
@@ -1089,6 +1096,8 @@ public class MainActivity extends AppCompatActivity implements SharingEngineJanu
         // (token was consumed on first start; a second dialog is what makes "first attempt fail").
         if (isScreenShareRunning()) {
             Log.i(Const.LOG_TAG, "Screen share already active, skipping consent on admin rejoin");
+            // Janus videobufferkf waits for the next IDR; force one so the web viewer is not white.
+            scheduleForceKeyframesForViewer();
             return;
         }
         if (screenCaptureRequestPending) {
@@ -1149,6 +1158,7 @@ public class MainActivity extends AppCompatActivity implements SharingEngineJanu
         sharingActive = false;
         readyStatusReported = false;
         cancelReadyStatusReport();
+        cancelForceKeyframesForViewer();
         clearScreenCaptureConsent();
         lastShareStartMs = 0;
         notifySharingStop();
@@ -1323,6 +1333,91 @@ public class MainActivity extends AppCompatActivity implements SharingEngineJanu
     };
 
     /**
+     * Web viewer attaches to Janus streaming slightly after TextRoom join. Force IDRs
+     * immediately and a few times more so the first painted frame is not delayed ~20s.
+     */
+    private void scheduleForceKeyframesForViewer() {
+        cancelForceKeyframesForViewer();
+        // Longer cadence: ColorOS may ignore early IDR requests until display settles.
+        final long[] delaysMs = {0L, 400L, 1200L, 2500L, 5000L, 9000L};
+        final Runnable runnable = new Runnable() {
+            int step;
+
+            @Override
+            public void run() {
+                if (forceKeyframesForViewerRunnable != this || !isScreenShareRunning()) {
+                    return;
+                }
+                dirtyScreenForCapture();
+                ScreenSharingHelper.forceKeyframes(MainActivity.this);
+                step++;
+                if (step < delaysMs.length && forceKeyframesForViewerRunnable == this) {
+                    handler.postDelayed(this, delaysMs[step] - delaysMs[step - 1]);
+                } else if (forceKeyframesForViewerRunnable == this) {
+                    forceKeyframesForViewerRunnable = null;
+                }
+            }
+        };
+        forceKeyframesForViewerRunnable = runnable;
+        handler.post(runnable);
+    }
+
+    /**
+     * Move/flash the share overlay so ColorOS marks a dirty region for MediaProjection.
+     * Without UI motion the encoder often produces no decodable frame until a manual tap.
+     */
+    private void dirtyScreenForCapture() {
+        try {
+            WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+            if (wm == null) {
+                return;
+            }
+            if (overlayDot != null) {
+                WindowManager.LayoutParams lp = (WindowManager.LayoutParams) overlayDot.getLayoutParams();
+                final int ox = lp.x;
+                final int oy = lp.y;
+                lp.x = ox + 4;
+                lp.y = oy + 4;
+                wm.updateViewLayout(overlayDot, lp);
+                overlayDot.setImageAlpha(255);
+                handler.postDelayed(() -> {
+                    if (overlayDot == null) {
+                        return;
+                    }
+                    try {
+                        lp.x = ox;
+                        lp.y = oy;
+                        wm.updateViewLayout(overlayDot, lp);
+                    } catch (Exception ignored) {
+                    }
+                }, 80);
+                return;
+            }
+            // No persistent overlay — flash a tiny one then remove (needs overlay permission).
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+                return;
+            }
+            final ImageView flash = createOverlayDot();
+            flash.setImageAlpha(200);
+            handler.postDelayed(() -> {
+                try {
+                    wm.removeView(flash);
+                } catch (Exception ignored) {
+                }
+            }, 120);
+        } catch (Exception e) {
+            Log.w(Const.LOG_TAG, "dirtyScreenForCapture failed", e);
+        }
+    }
+
+    private void cancelForceKeyframesForViewer() {
+        if (forceKeyframesForViewerRunnable != null) {
+            handler.removeCallbacks(forceKeyframesForViewerRunnable);
+            forceKeyframesForViewerRunnable = null;
+        }
+    }
+
+    /**
      * Report MDM agentStatus=ready only after capture is up and TextRoom ICE has settled.
      * Opening the viewer while ICE is flapping causes browser "Disconnected" on first Connect.
      */
@@ -1365,6 +1460,8 @@ public class MainActivity extends AppCompatActivity implements SharingEngineJanu
         }
         final String reportSessionId = sessionId;
         Log.i(Const.LOG_TAG, "Reporting MDM agentStatus=ready (capture up, TextRoom ICE healthy)");
+        // Seed Janus with an IDR before Open Viewer attaches (videobufferkf).
+        scheduleForceKeyframesForViewer();
         MdmReporter.reportAgentStatus(settingsHelper, reportSessionId, "ready", (ok, message) -> handler.post(() -> {
             if (ok) {
                 readyStatusReported = true;

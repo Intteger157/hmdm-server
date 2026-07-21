@@ -157,6 +157,13 @@ public class ScreenSharingHelper {
         executeCommand(activity, intent);
     }
 
+    /** Ask the running share to emit IDRs so a late web viewer can decode immediately. */
+    public static void forceKeyframes(Context context) {
+        Intent intent = new Intent(context, ScreenSharingService.class);
+        intent.setAction(ScreenSharingService.ACTION_FORCE_KEYFRAMES);
+        context.startService(intent);
+    }
+
     private static void executeCommand(Activity activity, Intent intent) {
         String action = intent.getAction();
         boolean needsForeground = ScreenSharingService.ACTION_START_SHARING.equals(action);

@@ -71,18 +71,33 @@ public class ScreenSharingService extends Service {
 
     private final Handler mKeyframeHandler = new Handler(Looper.getMainLooper());
     private int mKeyframeRequestCount = 0;
+    private int mKeyframeBurstLimit = KEYFRAME_BURST_COUNT;
     private static final int KEYFRAME_BURST_COUNT = 8;
+    /** Extra burst when a late viewer (web admin) joins an already-running share. */
+    private static final int KEYFRAME_BURST_COUNT_LATE_VIEWER = 16;
     private static final long KEYFRAME_BURST_INTERVAL_MS = 500;
+    private static final long KEYFRAME_BURST_LATE_INTERVAL_MS = 250;
     private static final long KEYFRAME_STEADY_INTERVAL_MS = 2000;
+    private boolean mLateViewerBurst;
     private Runnable mPendingVirtualDisplayStart;
     private final Runnable mKeyframeRunnable = new Runnable() {
         @Override
         public void run() {
-            requestSyncFrame();
+            // ColorOS often ignores PARAMETER_KEY_REQUEST_SYNC_FRAME on a static
+            // mirror; re-nudge the VirtualDisplay every few ticks during late-viewer burst.
+            if (mLateViewerBurst && (mKeyframeRequestCount % 3 == 0)) {
+                nudgeVirtualDisplay();
+            } else {
+                requestSyncFrame();
+            }
             mKeyframeRequestCount++;
-            long delay = mKeyframeRequestCount < KEYFRAME_BURST_COUNT
-                    ? KEYFRAME_BURST_INTERVAL_MS
-                    : KEYFRAME_STEADY_INTERVAL_MS;
+            long delay;
+            if (mKeyframeRequestCount < mKeyframeBurstLimit) {
+                delay = mLateViewerBurst ? KEYFRAME_BURST_LATE_INTERVAL_MS : KEYFRAME_BURST_INTERVAL_MS;
+            } else {
+                delay = KEYFRAME_STEADY_INTERVAL_MS;
+                mLateViewerBurst = false;
+            }
             mKeyframeHandler.postDelayed(this, delay);
         }
     };
@@ -92,6 +107,8 @@ public class ScreenSharingService extends Service {
     public static final String ACTION_REQUEST_SHARING = "request";
     public static final String ACTION_START_SHARING = "start";
     public static final String ACTION_STOP_SHARING = "stop";
+    /** Force IDR + VirtualDisplay dirty so Janus late watchers get a decodable frame. */
+    public static final String ACTION_FORCE_KEYFRAMES = "force_keyframes";
     public static final String ATTR_SCREEN_WIDTH = "screenWidth";
     public static final String ATTR_SCREEN_HEIGHT = "screenHeight";
     public static final String ATTR_SCREEN_DENSITY = "screenDensity";
@@ -208,6 +225,8 @@ public class ScreenSharingService extends Service {
             // Android 14+: MediaProjection tokens are single-use; always destroy.
             stopSharing(true);
             stopSelf();
+        } else if (action.equals(ACTION_FORCE_KEYFRAMES)) {
+            forceKeyframesForLateViewer();
         }
 
         return Service.START_NOT_STICKY;
@@ -614,18 +633,87 @@ public class ScreenSharingService extends Service {
         mcis.setH264Packetizer((H264Packetizer) mPacketizer);
         mPacketizer.start();
         LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(Const.ACTION_SCREEN_SHARING_START));
+        // Realme/ColorOS: first frames stay white until the mirrored display gets a dirty region.
+        if (OplusCompat.isOplusFamily()) {
+            mKeyframeHandler.postDelayed(this::nudgeVirtualDisplay, 400);
+            mKeyframeHandler.postDelayed(this::nudgeVirtualDisplay, 1800);
+            mKeyframeHandler.postDelayed(this::nudgeVirtualDisplay, 4500);
+        }
     }
 
     private void startKeyframeRequests() {
         stopKeyframeRequests();
         mKeyframeRequestCount = 0;
+        mKeyframeBurstLimit = KEYFRAME_BURST_COUNT;
+        mLateViewerBurst = false;
         // Immediate IDR so Janus/browser can decode without waiting for UI motion.
         mKeyframeHandler.post(mKeyframeRunnable);
+    }
+
+    /**
+     * Web admin often joins TextRoom after capture is already running. Janus
+     * {@code videobufferkf} waits for the next RTP keyframe; on static ColorOS
+     * screens {@link MediaCodec#PARAMETER_KEY_REQUEST_SYNC_FRAME} is frequently
+     * ignored until the display has a dirty region — so nudge + aggressive burst.
+     */
+    private void forceKeyframesForLateViewer() {
+        if (mMediaCodec == null || mVirtualDisplay == null) {
+            Log.d(Const.LOG_TAG, "forceKeyframes: share not active yet");
+            return;
+        }
+        Log.i(Const.LOG_TAG, "Forcing keyframe burst for late viewer");
+        nudgeVirtualDisplay();
+        stopKeyframeRequests();
+        mKeyframeRequestCount = 0;
+        mKeyframeBurstLimit = KEYFRAME_BURST_COUNT_LATE_VIEWER;
+        mLateViewerBurst = true;
+        mKeyframeHandler.post(mKeyframeRunnable);
+    }
+
+    private void nudgeVirtualDisplay() {
+        if (mVirtualDisplay == null || mScreenWidth <= 4 || mScreenHeight <= 4) {
+            return;
+        }
+        final int w = mScreenWidth & ~1;
+        final int h = mScreenHeight & ~1;
+        final int d = Math.max(1, mScreenDensity);
+        try {
+            // Keep even dimensions (codec requirement). A 2px shrink is often ignored on
+            // ColorOS AUTO_MIRROR — use a larger temporary resize + density bump.
+            final int nw = Math.max(16, w - 8);
+            final int nh = Math.max(16, h - 8);
+            Log.d(Const.LOG_TAG, "VirtualDisplay nudge " + w + "x" + h + " -> " + nw + "x" + nh);
+            mVirtualDisplay.resize(nw, nh, d);
+            mKeyframeHandler.postDelayed(() -> {
+                if (mVirtualDisplay == null) {
+                    return;
+                }
+                try {
+                    mVirtualDisplay.resize(w, h, d + 40);
+                } catch (Exception e) {
+                    Log.w(Const.LOG_TAG, "VirtualDisplay mid-nudge failed", e);
+                }
+            }, 60);
+            mKeyframeHandler.postDelayed(() -> {
+                if (mVirtualDisplay == null) {
+                    return;
+                }
+                try {
+                    mVirtualDisplay.resize(w, h, d);
+                } catch (Exception e) {
+                    Log.w(Const.LOG_TAG, "VirtualDisplay resize restore failed", e);
+                }
+                requestSyncFrame();
+            }, 140);
+        } catch (Exception e) {
+            Log.w(Const.LOG_TAG, "VirtualDisplay nudge failed", e);
+        }
     }
 
     private void stopKeyframeRequests() {
         mKeyframeHandler.removeCallbacks(mKeyframeRunnable);
         mKeyframeRequestCount = 0;
+        mLateViewerBurst = false;
     }
 
     private void requestSyncFrame() {

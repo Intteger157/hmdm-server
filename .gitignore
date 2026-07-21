@@ -5,6 +5,18 @@ target
 *.iml
 .idea
 
+# local AI / docs tooling (not for deploy)
+.cursor/
+openspec/
+.agent/
+agent-transcripts/
+
+# Android binaries / build outputs
+*.apk
+**/app/release/
+**/.gradle/
+**/local.properties
+
 # node modules for grunt
 server/webtarget/node
 **/node_modules

@@ -1,0 +1,3 @@
+[submodule "plugins/deviceremote/h-mdm-remote-control"]
+	path = plugins/deviceremote/h-mdm-remote-control
+	url = https://github.com/Intteger157/h-mdm-remote-control.git

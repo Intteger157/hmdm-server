@@ -11,6 +11,7 @@ import android.view.accessibility.AccessibilityEvent;
 public class GestureDispatchService extends AccessibilityService {
     // Sharing state
     private boolean isSharing = false;
+    private long lastKeyframeNudgeMs;
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent accessibilityEvent) {
@@ -37,6 +38,7 @@ public class GestureDispatchService extends AccessibilityService {
             isSharing = true;
         } else if (action.equals(Const.ACTION_SCREEN_SHARING_STOP)) {
             isSharing = false;
+            lastKeyframeNudgeMs = 0;
         }
         return Service.START_STICKY;
     }
@@ -125,5 +127,17 @@ public class GestureDispatchService extends AccessibilityService {
 
         boolean result = dispatchGesture(gestureBuilder.build(), null, null);
         Log.d(Const.LOG_TAG, "Gesture dispatched, result=" + result);
+        // Realme: a real UI dirty region is what unsticks a white WebRTC stream.
+        // Mirror that after remote gestures so subsequent viewers get an IDR sooner.
+        maybeNudgeEncoderAfterGesture();
+    }
+
+    private void maybeNudgeEncoderAfterGesture() {
+        long now = System.currentTimeMillis();
+        if (now - lastKeyframeNudgeMs < 1500L) {
+            return;
+        }
+        lastKeyframeNudgeMs = now;
+        ScreenSharingHelper.forceKeyframes(this);
     }
 }
